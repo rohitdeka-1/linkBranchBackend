@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { uploadOnCloudinary } from "../services/cloudinary.service";
-import mongoose from "mongoose";
+import mongoose, { ObjectId } from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import { User } from "../models/user.model";
 import { Link } from "../models/link.model";
 import { IRequest } from "../types/express";
+
 
 const handleUploadImage = async (
   req: IRequest,
@@ -19,6 +20,7 @@ const handleUploadImage = async (
       message: "No file found",
     });
   }
+  
   const uploadResult = await uploadOnCloudinary(localFilePath);
   if (!uploadResult) {
     return res.status(400).json({
@@ -35,7 +37,7 @@ const handleUploadImage = async (
   }
 
   try {
-    const updatedUser = await User.findOneAndUpdate(req.user._id, {
+    const updatedUser = await User.findOneAndUpdate( req.user?._id , {
       profilePic: uploadResult.secure_url,
     });
 

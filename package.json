@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "bun --hot ./src/index.ts"
+    "dev": "nodemon"
   },
   "author": "@rohitdeka-1",
   "license": "ISC",

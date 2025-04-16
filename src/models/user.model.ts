@@ -1,7 +1,8 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, mongo, Schema } from 'mongoose';
 import bcrypt from "bcryptjs";
 
 export interface IUser extends Document {
+  _id:mongoose.Types.ObjectId;
   fullname: string,
   username: string;
   email: string;
@@ -10,10 +11,8 @@ export interface IUser extends Document {
   bio?: string;
   theme?: string;
   createdAt: Date;
-  shortID: String;
   updatedAt: Date;
   refreshToken: string;
-  links?: mongoose.Types.ObjectId[];
 }
 
 const userSchema = new Schema<IUser>(
@@ -31,9 +30,9 @@ const userSchema = new Schema<IUser>(
       trim: true,
       tolowercase:true,
     },
-    shortID:{
-      type: String,
-    },
+    // shortID:{
+    //   type: String,
+    // },
     email: {
       type: String,
       required: true,
@@ -56,7 +55,6 @@ const userSchema = new Schema<IUser>(
     refreshToken:{
       type: String,
     },
-    links: [{ type: Schema.Types.ObjectId, ref: "Link" }],
   },
   {
     timestamps: true,

@@ -9,9 +9,9 @@ const uploadMulter = upload.single('profilePic') as unknown as express.RequestHa
 
 userRoute.post("/upload-image",verifyToken,uploadMulter,handleUploadImage)
 userRoute.get("/me",verifyToken,fetchUser)
-userRoute.put("/update-user",verifyToken,uploadMulter,updateUser)
-userRoute.post("/add-links",verifyToken,addLinks)
-userRoute.post("/delete-links",verifyToken,deleteLinks)
+userRoute.put("/user",verifyToken,uploadMulter,updateUser)
+userRoute.post("/links",verifyToken,addLinks)
+userRoute.delete("/links",verifyToken,deleteLinks)
 
 export default userRoute;
 
