@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { uploadOnCloudinary } from "../services/cloudinary.service";
+import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import { User } from "../models/user.model";
 import { Link } from "../models/link.model";
@@ -284,24 +285,32 @@ const deleteLinks = async (
     });
   }
 
+  if (!mongoose.Types.ObjectId.isValid(linkId)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid link ID",
+    });
+  }
+
   try {
-   
+    console.log("req.user:", req.user);
+    console.log("linkId:", linkId);
+
     const deleted = await Link.findOneAndDelete({
       _id: linkId,
       user: req.user._id,
     });
 
-
     if (!deleted) {
       return res.status(404).json({
         success: false,
-        message: 'Link not found or unauthorized',
+        message: "Link not found or unauthorized",
       });
     }
 
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
-      { $pull: { links: linkId } }, 
+      { $pull: { links: linkId } },
       { new: true }
     ).populate("links");
 
@@ -315,13 +324,11 @@ const deleteLinks = async (
     return res.status(200).json({
       success: true,
       message: "Link deleted successfully",
-      user : {
+      user: {
         id: updatedUser._id,
-        links: updatedUser.links
-      }
+        links: updatedUser.links,
+      },
     });
-
-   
   } catch (err) {
     console.error("Error deleting link:", err);
     return res.status(500).json({
