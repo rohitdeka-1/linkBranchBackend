@@ -9,13 +9,11 @@ export interface IUser extends Document {
   profilePic?: string;
   bio?: string;
   theme?: string;
-  socialLinks?: {
-    platform: string;
-    url: string;
-  }[];
   createdAt: Date;
+  shortID: String;
   updatedAt: Date;
   refreshToken: string;
+  links?: mongoose.Types.ObjectId[];
 }
 
 const userSchema = new Schema<IUser>(
@@ -32,6 +30,9 @@ const userSchema = new Schema<IUser>(
       unique: true,
       trim: true,
       tolowercase:true,
+    },
+    shortID:{
+      type: String,
     },
     email: {
       type: String,
@@ -52,15 +53,10 @@ const userSchema = new Schema<IUser>(
       type: String,
       default: '',
     },
-    socialLinks: [
-      {
-        platform: String,
-        url: String,
-      }
-    ],
     refreshToken:{
       type: String,
-    }
+    },
+    links: [{ type: Schema.Types.ObjectId, ref: "Link" }],
   },
   {
     timestamps: true,

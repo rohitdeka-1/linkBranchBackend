@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { uploadOnCloudinary } from "../services/cloudinary.service";
 import { v2 as cloudinary } from "cloudinary";
 import { User } from "../models/user.model";
+import { Link } from "../models/link.model";
 
 const handleUploadImage = async (
   req: Request,
@@ -166,7 +167,7 @@ const addLinks = async (
   res: Response,
   next: NextFunction
 ): Promise<any> => {
-  const { platform, url } = req.body;
+  const { platform, url, icon } = req.body;
   if (!req.body) {
     return res.status(400).json({
       success: false,
@@ -181,10 +182,10 @@ const addLinks = async (
     });
   }
 
-  if (!platform || !url) {
+  if (!platform.trim() || !url.trim()) {
     return res.status(400).json({
       success: false,
-      message: "Platform and URL are required",
+      message: "Platform and URL cannot be empty",
     });
   }
 
@@ -195,38 +196,71 @@ const addLinks = async (
     });
   }
 
-  const existedUrl = await User.findOne({
-    _id: req.user._id,
-    "socialLinks.url": url,
-  });
-
-  console.log(existedUrl);
-
-  if (existedUrl) {
-    return res.status(300).json({
-      success: false,
-      message: "Link already Exists",
+  try{
+    const existedUrl = await Link.findOne({
+      user: req.user._id,
+      url,
+    });
+  
+    console.log(existedUrl)
+  
+    if (existedUrl) {
+      return res.status(409).json({
+        success: false,
+        message: "Link already exists for this platform and URL",
+      });
+    }
+  
+    const newLink = await Link.create({
+      url,
+      title: platform,
+      icon: icon,
+      user: req.user._id,
+    });
+  
+    if (!newLink) {
+      return res.status(400).json({
+        success: false,
+        message: "Failed to add link",
+      });
+    }
+    await User.findByIdAndUpdate(
+      req.user._id,
+      { $push: { links: newLink._id } },
+      { new: true }
+    );
+  
+    const user = await User.findById(req.user._id).populate("links");
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "user not found",
+      });
+    }
+  
+    return res.status(200).json({
+      success: true,
+      message: "Link Added",
+      user: {
+        id: req.user._id,
+        fullname: user.fullname,
+        username: user.username,
+        email: user.email,
+        bio: user.bio,
+        profilePic: user.profilePic,
+        links: user.links,
+      },
     });
   }
 
-  const updatedUser = await User.findOneAndUpdate(
-    req.user._id,
-    { $push: { socialLinks: { platform, url } } },
-    { new: true }
-  );
-
-  if (!updatedUser) {
+  catch(err){
+    console.log("Error",err);
     return res.status(400).json({
-      success: false,
-      message: "User does not exits",
-    });
+      "success": false,
+      "message": "Internal Server error"
+    })
   }
-
-  return res.status(200).json({
-    success: true,
-    message: "Link Added",
-    socialLinks: updatedUser.socialLinks,
-  });
+  
 };
 
 const deleteLinks = async (
@@ -234,7 +268,7 @@ const deleteLinks = async (
   res: Response,
   next: NextFunction
 ): Promise<any> => {
-  const { platform, url } = req.body;
+  const { platform,url } = req.body;
 
   if (!req.user) {
     return res.status(401).json({
@@ -264,17 +298,15 @@ const deleteLinks = async (
       });
     }
 
-  
     const updatedUser = await User.findOneAndUpdate(
       { _id: req.user._id },
       { $pull: { socialLinks: { platform, url } } },
-      { new: true } 
+      { new: true }
     );
 
     return res.status(200).json({
       success: true,
       message: "Link deleted successfully",
-      socialLinks: updatedUser?.socialLinks, 
     });
   } catch (err) {
     console.error("Error deleting link:", err);
