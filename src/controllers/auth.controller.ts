@@ -3,6 +3,7 @@ import { User } from "../models/user.model";
 import jwt, { SignOptions } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
+import { nanoid } from "nanoid";
 dotenv.config();
 
 const userRegistration = async (req: Request, res: Response): Promise<any> => {
@@ -53,7 +54,8 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
         expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
       } as SignOptions
     );
-
+    const shortID = nanoid(4);
+    createdUser.shortID = shortID;
     createdUser.refreshToken = refreshToken;
     await createdUser.save();
 
@@ -62,6 +64,7 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
       name: createdUser.fullname,
       username: createdUser.username,
       email: createdUser.email,
+      shortID : shortID
     };
 
     res.cookie("accessToken", accessToken, {
@@ -77,6 +80,9 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
       sameSite: "strict",
       maxAge: 5 * 24 * 60 * 60 * 1000,
     });
+
+    
+
 
     return res.status(201).json({
       success: true,

@@ -268,7 +268,7 @@ const deleteLinks = async (
   res: Response,
   next: NextFunction
 ): Promise<any> => {
-  const { platform,url } = req.body;
+  const { linkId } = req.body;
 
   if (!req.user) {
     return res.status(401).json({
@@ -277,37 +277,51 @@ const deleteLinks = async (
     });
   }
 
-  if (!platform || !url) {
+  if (!linkId) {
     return res.status(400).json({
       success: false,
-      message: "Platform and URL are required",
+      message: "LinkId is required",
     });
   }
 
   try {
-    const user = await User.findOne({
-      _id: req.user._id,
-      "socialLinks.platform": platform,
-      "socialLinks.url": url,
+   
+    const deleted = await Link.findOneAndDelete({
+      _id: linkId,
+      user: req.user._id,
     });
 
-    if (!user) {
+
+    if (!deleted) {
       return res.status(404).json({
         success: false,
-        message: "Link not found",
+        message: 'Link not found or unauthorized',
       });
     }
 
-    const updatedUser = await User.findOneAndUpdate(
-      { _id: req.user._id },
-      { $pull: { socialLinks: { platform, url } } },
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { $pull: { links: linkId } }, 
       { new: true }
-    );
+    ).populate("links");
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
 
     return res.status(200).json({
       success: true,
       message: "Link deleted successfully",
+      user : {
+        id: updatedUser._id,
+        links: updatedUser.links
+      }
     });
+
+   
   } catch (err) {
     console.error("Error deleting link:", err);
     return res.status(500).json({
