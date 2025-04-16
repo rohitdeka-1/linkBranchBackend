@@ -4,9 +4,10 @@ import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import { User } from "../models/user.model";
 import { Link } from "../models/link.model";
+import { IRequest } from "../types/express";
 
 const handleUploadImage = async (
-  req: Request,
+  req: IRequest,
   res: Response,
   next: NextFunction
 ) => {
@@ -51,7 +52,7 @@ const handleUploadImage = async (
   }
 };
 
-const fetchUser = async(req: Request, res: Response) => {
+const fetchUser = async(req: IRequest, res: Response) => {
   if (!req.user) {
     return res.status(401).json({
       success: false,
@@ -61,7 +62,7 @@ const fetchUser = async(req: Request, res: Response) => {
 
   try {
     const userWithLinks = await User.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(req.user._id) } },
+      { $match: { _id: req.user._id } },
       {
         $lookup: {
           from: "links", 
@@ -104,7 +105,7 @@ const fetchUser = async(req: Request, res: Response) => {
   }
 };
 
-const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+const updateUser = async (req: IRequest, res: Response, next: NextFunction) => {
   try {
     const { bio, fullname } = req.body;
     const updateData: Partial<{
@@ -195,7 +196,7 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const addLinks = async (
-  req: Request,
+  req: IRequest,
   res: Response,
   next: NextFunction
 ): Promise<any> => {
@@ -261,7 +262,7 @@ const addLinks = async (
     }
 
     const userWithLinks = await User.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(req.user._id) } },
+      { $match: { _id: req.user._id } },
       {
         $lookup: {
           from: "links", 
@@ -310,7 +311,7 @@ const addLinks = async (
 };
 
 const deleteLinks = async (
-  req: Request,
+  req: IRequest,
   res: Response,
   next: NextFunction
 ): Promise<any> => {
@@ -354,7 +355,7 @@ const deleteLinks = async (
     }
 
     const userWithLinks = await User.aggregate([
-      { $match: { _id: new mongoose.Types.ObjectId(req.user._id) } },
+      { $match: { _id: req.user._id } },
       {
         $lookup: {
           from: "links", 
