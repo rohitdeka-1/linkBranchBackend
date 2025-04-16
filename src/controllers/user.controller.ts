@@ -51,7 +51,7 @@ const handleUploadImage = async (
   }
 };
 
-const fetchUser = (req: Request, res: Response) => {
+const fetchUser = async(req: Request, res: Response) => {
   if (!req.user) {
     return res.status(401).json({
       success: false,
@@ -59,18 +59,49 @@ const fetchUser = (req: Request, res: Response) => {
     });
   }
 
-  const { _id, name, bio, email, profilePic } = req.user;
+  try {
+    const userWithLinks = await User.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(req.user._id) } },
+      {
+        $lookup: {
+          from: "links", 
+          localField: "_id",
+          foreignField: "user",
+          as: "links",
+        },
+      },
+      { $sort: { "links.order": 1 } },
+      {
+        $project: {
+          _id: 1,
+          fullname: 1,
+          username: 1,
+          email: 1,
+          bio: 1,
+          profilePic: 1,
+          links: 1, 
+        },
+      },
+    ]);
 
-  return res.status(200).json({
-    success: true,
-    user: {
-      id: _id,
-      name,
-      email,
-      bio,
-      profilePic,
-    },
-  });
+    if (!userWithLinks || userWithLinks.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      user: userWithLinks[0], 
+    });
+  } catch (err) {
+    console.error("Error fetching user:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
 };
 
 const updateUser = async (req: Request, res: Response, next: NextFunction) => {
