@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface ILink extends Document {
   title: string;
@@ -26,7 +26,7 @@ const linkSchema = new Schema<ILink>(
     },
     icon: {
       type: String,
-      default: '',
+      default: "",
     },
 
     isActive: {
@@ -37,9 +37,10 @@ const linkSchema = new Schema<ILink>(
       type: Number,
       default: 0,
     },
+    order: { type: Number, default: 0 },
     user: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
   },
@@ -48,4 +49,4 @@ const linkSchema = new Schema<ILink>(
   }
 );
 
-export const Link = mongoose.model<ILink>('Link', linkSchema); 
+export const Link = mongoose.model<ILink>("Link", linkSchema);

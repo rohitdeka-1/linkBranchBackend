@@ -211,12 +211,15 @@ const addLinks = async (
         message: "Link already exists for this platform and URL",
       });
     }
+
+    const linkCount = await Link.countDocuments({ user: req.user._id });
   
     const newLink = await Link.create({
       url,
       title: platform,
-      icon: icon,
+      icon: icon || "defaul-icon",
       user: req.user._id,
+      order: linkCount,
     });
   
     if (!newLink) {
@@ -225,32 +228,43 @@ const addLinks = async (
         message: "Failed to add link",
       });
     }
-    await User.findByIdAndUpdate(
-      req.user._id,
-      { $push: { links: newLink._id } },
-      { new: true }
-    );
-  
-    const user = await User.findById(req.user._id).populate("links");
-    if (!user) {
+
+    const userWithLinks = await User.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(req.user._id) } },
+      {
+        $lookup: {
+          from: "links", 
+          localField: "_id",
+          foreignField: "user",
+          as: "links",
+        },
+      },
+
+      { $sort: { "links.order": 1 } },
+      {
+        $project: {
+          _id: 1,
+          fullname: 1,
+          username: 1,
+          email: 1,
+          bio: 1,
+          profilePic: 1,
+          links: 1,
+        },
+      },
+    ]);
+
+    if (!userWithLinks || userWithLinks.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "user not found",
+        message: "User not found",
       });
     }
   
     return res.status(200).json({
       success: true,
       message: "Link Added",
-      user: {
-        id: req.user._id,
-        fullname: user.fullname,
-        username: user.username,
-        email: user.email,
-        bio: user.bio,
-        profilePic: user.profilePic,
-        links: user.links,
-      },
+      user: userWithLinks[0], 
     });
   }
 
@@ -308,13 +322,31 @@ const deleteLinks = async (
       });
     }
 
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      { $pull: { links: linkId } },
-      { new: true }
-    ).populate("links");
+    const userWithLinks = await User.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(req.user._id) } },
+      {
+        $lookup: {
+          from: "links", 
+          localField: "_id",
+          foreignField: "user",
+          as: "links",
+        },
+      },
+      { $sort: { "links.order": 1 } },
+      {
+        $project: {
+          _id: 1,
+          fullname: 1,
+          username: 1,
+          email: 1,
+          bio: 1,
+          profilePic: 1,
+          links: 1,
+        },
+      },
+    ]);
 
-    if (!updatedUser) {
+    if (!userWithLinks || userWithLinks.length === 0) {
       return res.status(404).json({
         success: false,
         message: "User not found",
@@ -324,10 +356,7 @@ const deleteLinks = async (
     return res.status(200).json({
       success: true,
       message: "Link deleted successfully",
-      user: {
-        id: updatedUser._id,
-        links: updatedUser.links,
-      },
+      user: userWithLinks[0], 
     });
   } catch (err) {
     console.error("Error deleting link:", err);
