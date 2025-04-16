@@ -29,14 +29,15 @@ app.use(cookieParser());
 
 import userRoute from "./routes/user.route";
 import authRoute from "./routes/auth.route";
+import router from "./routes";
 
-app.use("/api/v1/auth",authRoute)
+// Routes
+app.use("/api/v1", router);
 
 app.get("/",(req,res)=>{
     res.send(`Running on ${process.pid}`)
 })
 
-app.use("/api/v1/user",userRoute)
 
 
 export {app};

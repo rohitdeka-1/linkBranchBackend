@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "nodemon"
+    "dev": "bun --hot ./src/index.ts"
   },
   "author": "@rohitdeka-1",
   "license": "ISC",
@@ -25,6 +25,7 @@
     "@types/cookie-parser": "^1.4.8",
     "@types/jsonwebtoken": "^9.0.9",
     "bcryptjs": "^3.0.2",
+    "cloudinary": "^2.6.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
@@ -33,6 +34,7 @@
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.13.2"
+    "mongoose": "^8.13.2",
+    "multer": "^1.4.5-lts.2"
   }
 }
