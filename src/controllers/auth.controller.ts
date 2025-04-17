@@ -105,6 +105,7 @@ const userLogin = async (
   next: NextFunction
 ): Promise<any> => {
   const { identity, password } = req.body;
+  const isProd = process.env.NODE_ENV === "production";
 
   try {
     const user = await User.findOne({
@@ -136,6 +137,13 @@ const userLogin = async (
         expiresIn: process.env.ACCESS_TOKEN_EXPIRY as string,
       } as SignOptions
     );
+    res.cookie("accessToken", accessToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 60 * 60 * 1000,
+    });
+
 
     res.status(200).json({
       success: true,

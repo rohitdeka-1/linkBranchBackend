@@ -16,7 +16,7 @@ const verifyToken = async(req:IRequest,res:Response,next:NextFunction):Promise<a
         const decoded:{userId:string} = jwt.verify(token,`${ACCESS_TOKEN_SECRET}` ) as {userId:string};
         const user = await User.findOne({_id:decoded.userId});
 
-        
+    
         if (!user) {
             return res.status(401).json({ "success": false, "message": "User not found" });
           }
