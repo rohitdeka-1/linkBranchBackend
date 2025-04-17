@@ -18,13 +18,13 @@ app.use(express.urlencoded({
 }))
 
 app.use(cors({
-    origin:["*"],
-    methods:["GET","POST","PUT","PATCH"]
+    origin:["http://localhost:5173"],
+    methods:["GET","POST","PUT","PATCH"],
+    credentials: true,
 }))
 
 app.use(require('express-status-monitor')());
 
-app.use(require('express-status-monitor')());
 app.use(cookieParser());
 
 import userRoute from "./routes/user.route";
@@ -33,7 +33,6 @@ import router from "./routes";
 
 // Routes
 app.use("/api/v1", router);
-
 app.get("/",(req,res)=>{
     res.send(`Running on ${process.pid}`)
 })

@@ -20,7 +20,7 @@ const handleUploadImage = async (
       message: "No file found",
     });
   }
-  
+
   const uploadResult = await uploadOnCloudinary(localFilePath);
   if (!uploadResult) {
     return res.status(400).json({
@@ -402,3 +402,4 @@ const deleteLinks = async (
 };
 
 export { handleUploadImage, fetchUser, updateUser, addLinks, deleteLinks };
+

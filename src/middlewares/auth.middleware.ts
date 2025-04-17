@@ -10,7 +10,7 @@ const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET
 
 const verifyToken = async(req:IRequest,res:Response,next:NextFunction):Promise<any> => {
 
-    const token = req.header('Authorization')?.split(' ')[1]; 
+    const token = req.cookies.accessToken;
     if(!token) return res.status(401).json({"success":false,"message" : "Access Denied"});
     try{
         const decoded:{userId:string} = jwt.verify(token,`${ACCESS_TOKEN_SECRET}` ) as {userId:string};

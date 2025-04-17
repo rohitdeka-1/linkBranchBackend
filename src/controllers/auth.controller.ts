@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const userRegistration = async (req: Request, res: Response): Promise<any> => {
+
+  const isProd = process.env.NODE_ENV === "production";
   const { fullname, username, email, password } = req.body;
   console.log(username, email);
 
@@ -68,15 +70,15 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "strict",
+      secure: false,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 60 * 60 * 1000,
     });
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "strict",
+      sameSite: isProd ? "none" : "lax",
       maxAge: 5 * 24 * 60 * 60 * 1000,
     });
 

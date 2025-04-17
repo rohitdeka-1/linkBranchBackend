@@ -2,9 +2,11 @@
   "name": "linkbranch",
   "version": "1.0.0",
   "main": "index.js",
+  
   "scripts": {
     "start": "node dist/index.js",
     "dev": "nodemon"
+    
   },
   "author": "@rohitdeka-1",
   "license": "ISC",
