@@ -19,11 +19,19 @@ app.use(express.urlencoded({
 
 app.set("trust proxy", 1);
 
-app.use(cors({
-    origin:["http://localhost:5173","https://branch-murex.vercel.app"],
-    methods:["GET","POST","PUT","PATCH"],
-    credentials: true,
-}))
+// app.use(cors({
+//     origin:["http://localhost:5173","https://branch-murex.vercel.app"],
+//     methods:["GET","POST","PUT","PATCH"],
+//     credentials: true,
+// }))
+
+app.use(
+    cors({
+      origin: ["http://localhost:5173", "https://branch-murex.vercel.app"], // Add your frontend URL
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+      credentials: true, // Allow cookies to be sent
+    })
+  );
 // ✅ Preflight support
 app.options("*", cors({
     origin: [
