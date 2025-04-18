@@ -17,6 +17,8 @@ app.use(express.urlencoded({
     limit:"15KB"
 }))
 
+app.set("trust proxy", 1);
+
 app.use(cors({
     origin:["http://localhost:5173","https://branch-murex.vercel.app"],
     methods:["GET","POST","PUT","PATCH"],
