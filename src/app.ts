@@ -18,10 +18,18 @@ app.use(express.urlencoded({
 }))
 
 app.use(cors({
-    origin:["http://localhost:5173","https://branch-murex.vercel.app/"],
+    origin:["http://localhost:5173","https://branch-murex.vercel.app"],
     methods:["GET","POST","PUT","PATCH"],
     credentials: true,
 }))
+// ✅ Preflight support
+app.options("*", cors({
+    origin: [
+      "http://localhost:5173",
+      "https://branch-murex.vercel.app"
+    ],
+    credentials: true,
+  }));
 
 app.use(require('express-status-monitor')());
 
