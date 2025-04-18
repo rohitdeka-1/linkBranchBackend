@@ -6,7 +6,7 @@ export const registerationInputValidator = [
     body('username','Username too lengthy').isLength({max:25}),
     body('email','Invalid Email').notEmpty(),
     body('email','Invalid Email').isEmail(),
-    body('password','Password should be greater than 4').isLength({min:4}),
+    body('password','Password should be greater than 3').isLength({min:4}),
 ]
 
 // export const loginInputValidator = [
