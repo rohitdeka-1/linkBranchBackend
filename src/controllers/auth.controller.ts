@@ -70,7 +70,7 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false,
+      secure: true,
       sameSite: isProd ? "none" : "lax",
       maxAge: 60 * 60 * 1000,
     });
