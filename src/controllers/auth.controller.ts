@@ -7,7 +7,8 @@ dotenv.config();
 
 const userRegistration = async (req: Request, res: Response): Promise<any> => {
 
-  const isProd = process.env.NODE_ENV === "production";
+  const isProd = true; // force prod mode for now
+
   const { fullname, username, email, password } = req.body;
   console.log(username, email);
 
@@ -74,10 +75,10 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
       sameSite: isProd ? "none" : "lax",
       maxAge: 60 * 60 * 1000,
     });
-
+    
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure: isProd,
       sameSite: isProd ? "none" : "lax",
       maxAge: 5 * 24 * 60 * 60 * 1000,
     });
