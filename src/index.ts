@@ -6,11 +6,11 @@ import process from 'process';
 import cluster from 'cluster';
 
 
-// const numCPUs = availableParallelism();
+const numCPUs = availableParallelism();
 const PORT = process.env.PORT || 8000;
 
 
-
+console.log("CPUS: ",numCPUs);
 // if (cluster.isPrimary) {
 //     console.log(`Primary ${process.pid} is running`);
 //     for (let i = 0; i < 4; i++) {
