@@ -7,7 +7,7 @@ dotenv.config();
 
 const userRegistration = async (req: Request, res: Response): Promise<any> => {
 
-  const isProd = true; // force prod mode for now
+  const isProd = true;  
 
   const { fullname, username, email, password } = req.body;
   console.log(username, email);
@@ -71,16 +71,16 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: true, // Use HTTPS only in production
-      sameSite: isProd ? "none" : "lax", // Required for cross-origin cookies
+      secure: true,  
+      sameSite: isProd ? "none" : "lax",  
       maxAge: 60 * 60 * 1000, // 1 hour
     });
     
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true, // Use HTTPS only in production
-      sameSite: isProd ? "none" : "lax", // Required for cross-origin cookies
-      maxAge: 5 * 24 * 60 * 60 * 1000, // 5 days
+      secure: true,  
+      sameSite: isProd ? "none" : "lax",  
+      maxAge: 5 * 24 * 60 * 60 * 1000, 
     });
     
 
