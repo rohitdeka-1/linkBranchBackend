@@ -217,6 +217,13 @@ const addLinks = async (
     });
   }
 
+  if (!platform || !url) {
+    return res.status(400).json({
+      success: false,
+      message: "Platform and URL are required",
+    });
+  }
+
   if (!platform.trim() || !url.trim()) {
     return res.status(400).json({
       success: false,
