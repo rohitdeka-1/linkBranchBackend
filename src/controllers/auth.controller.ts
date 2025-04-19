@@ -71,16 +71,16 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: true,  
-      sameSite: "none",  
-      maxAge: 60 * 60 * 1000,  
+      secure: true, // Use HTTPS only in production
+      sameSite: isProd ? "none" : "lax", // Required for cross-origin cookies
+      maxAge: 60 * 60 * 1000, // 1 hour
     });
     
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,  
-      sameSite: isProd ? "none" : "lax",  
-      maxAge: 5 * 24 * 60 * 60 * 1000,  
+      secure: true, // Use HTTPS only in production
+      sameSite: isProd ? "none" : "lax", // Required for cross-origin cookies
+      maxAge: 5 * 24 * 60 * 60 * 1000, // 5 days
     });
     
 
@@ -139,9 +139,9 @@ const userLogin = async (
     );
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: isProd ? "none" : "lax",
-      maxAge: 60 * 60 * 1000,
+      secure: true, 
+      sameSite: isProd ? "none" : "lax", 
+      maxAge: 60 * 60 * 1000, 
     });
 
 
