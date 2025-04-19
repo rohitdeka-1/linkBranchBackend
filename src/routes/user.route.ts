@@ -13,5 +13,6 @@ userRoute.put("/user",verifyToken,uploadMulter,updateUser)
 userRoute.post("/links",verifyToken,addLinks)
 userRoute.delete("/links",verifyToken,deleteLinks)
 
+
 export default userRoute;
 

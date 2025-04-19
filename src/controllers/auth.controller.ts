@@ -5,9 +5,9 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 dotenv.config();
 
-const userRegistration = async (req: Request, res: Response): Promise<any> => {
+const isProd = true;  
 
-  const isProd = true;  
+const userRegistration = async (req: Request, res: Response): Promise<any> => {
 
   const { fullname, username, email, password } = req.body;
   console.log(username, email);
@@ -154,22 +154,30 @@ const userLogin = async (
     console.error("Error while login : ", err);
   }
 };
-
 const userLogout = async (
   req: Request,
   res: Response,
   next: NextFunction
 ): Promise<any> => {
   try {
-    res.clearCookie("token", {
+   
+    res.clearCookie("accessToken", {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
     });
 
-    return res.status(200).json({ message: "User logged out successfully." });
+ 
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
+    });
+
+    return res.status(200).json({ success: true, message: "User logged out successfully." });
   } catch (error) {
-    next(error); 
+    console.error("Error during logout:", error);
+    next(error);
   }
 };
 
