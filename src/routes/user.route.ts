@@ -11,7 +11,7 @@ userRoute.post("/upload-image",verifyToken,uploadMulter,handleUploadImage)
 userRoute.get("/me",verifyToken,fetchUser)
 userRoute.put("/user-up",verifyToken,uploadMulter,updateUser)
 userRoute.post("/links",verifyToken,addLinks)
-userRoute.delete("/links",verifyToken,deleteLinks)
+userRoute.delete("/:linkId",verifyToken,deleteLinks)
 
 
 export default userRoute;   

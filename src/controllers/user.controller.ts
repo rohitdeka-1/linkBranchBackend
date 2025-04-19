@@ -324,7 +324,7 @@ const deleteLinks = async (
   res: Response,
   next: NextFunction
 ): Promise<any> => {
-  const { linkId } = req.body;
+  const { linkId } = req.params;
 
   if (!req.user) {
     return res.status(401).json({
@@ -351,6 +351,13 @@ const deleteLinks = async (
     console.log("req.user:", req.user);
     console.log("linkId:", linkId);
 
+    const link = await Link.findOne({ _id: linkId, user: req.user._id });
+    if (!link) {
+      return res.status(404).json({
+        success: false,
+        message: "Link not found or unauthorized",
+      });
+    };
     const deleted = await Link.findOneAndDelete({
       _id: linkId,
       user: req.user._id,
