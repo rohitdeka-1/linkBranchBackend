@@ -71,16 +71,16 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: false, // Use HTTPS only in production
-      sameSite: isProd ? "none" : "lax", // Required for cross-origin cookies
-      maxAge: 60 * 60 * 1000, // 1 hour
+      secure: true,  
+      sameSite: "none",  
+      maxAge: 60 * 60 * 1000,  
     });
     
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false, // Use HTTPS only in production
-      sameSite: isProd ? "none" : "lax", // Required for cross-origin cookies
-      maxAge: 5 * 24 * 60 * 60 * 1000, // 5 days
+      secure: false,  
+      sameSite: isProd ? "none" : "lax",  
+      maxAge: 5 * 24 * 60 * 60 * 1000,  
     });
     
 
