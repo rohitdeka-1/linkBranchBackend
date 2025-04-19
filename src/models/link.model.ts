@@ -10,6 +10,7 @@ export interface ILink extends Document {
   user: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
+  backgroundImage: String;
 }
 
 const linkSchema = new Schema<ILink>(
@@ -42,6 +43,10 @@ const linkSchema = new Schema<ILink>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    backgroundImage: {
+      type: String,
+      default: "",
     },
   },
   {

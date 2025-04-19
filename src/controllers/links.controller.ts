@@ -84,3 +84,53 @@ export const fetchLinksByUser = async (req: IRequest, res: Response) => {
     });
   }
 };
+
+
+export const updateLink = async (req: IRequest, res: Response) => {
+
+  const {linkId} = req.params;
+  const { title, url, backgroundImage } = req.body;
+
+  const userId = req.user?._id;
+
+  try{
+
+    const link = await Link.findOne({ _id: linkId, user: userId });
+    if (!link) {
+      return res.status(404).json({
+        success: false,
+        message: "Link not found or unauthorized",
+      });
+    }
+
+
+    const updatedLink = await Link.findByIdAndUpdate(
+      linkId,
+      {
+        title,
+        url,
+        backgroundImage,
+      },
+      { new: true }
+    );  
+
+    if(!updatedLink){
+      return res.status(404).json({
+        success: false,
+        message: "Link not found",
+      });
+    }
+    return res.status(200).json({
+      success: true,
+      message: "Link updated successfully",
+      data: updatedLink,
+    });
+
+  }catch(err){
+    console.error("Error in updateLink:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
+};

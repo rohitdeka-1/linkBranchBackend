@@ -137,6 +137,8 @@ const userLogin = async (
         expiresIn: process.env.ACCESS_TOKEN_EXPIRY as string,
       } as SignOptions
     );
+
+    
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: true, 
