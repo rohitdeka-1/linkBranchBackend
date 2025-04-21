@@ -5,10 +5,9 @@ import bcrypt from "bcryptjs";
 import dotenv from "dotenv";
 dotenv.config();
 
-const isProd = true;  
+const isProd = true;
 
 const userRegistration = async (req: Request, res: Response): Promise<any> => {
-
   const { fullname, username, email, password } = req.body;
   console.log(username, email);
 
@@ -71,19 +70,17 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: true,  
-      sameSite: isProd ? "none" : "lax",  
+      secure: true,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 60 * 60 * 1000, // 1 hour
     });
-    
+
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,  
-      sameSite: isProd ? "none" : "lax",  
-      maxAge: 5 * 24 * 60 * 60 * 1000, 
+      secure: true,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 5 * 24 * 60 * 60 * 1000,
     });
-    
-
 
     return res.status(201).json({
       success: true,
@@ -138,14 +135,12 @@ const userLogin = async (
       } as SignOptions
     );
 
-    
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: true, 
-      sameSite: isProd ? "none" : "lax", 
-      maxAge: 60 * 60 * 1000, 
+      secure: true,
+      sameSite: isProd ? "none" : "lax",
+      maxAge: 60 * 60 * 1000,
     });
-
 
     res.status(200).json({
       success: true,
@@ -154,6 +149,10 @@ const userLogin = async (
     });
   } catch (err) {
     console.error("Error while login : ", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
 const userLogout = async (
@@ -162,21 +161,21 @@ const userLogout = async (
   next: NextFunction
 ): Promise<any> => {
   try {
-   
     res.clearCookie("accessToken", {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
     });
 
- 
     res.clearCookie("refreshToken", {
       httpOnly: true,
       secure: isProd,
       sameSite: isProd ? "none" : "lax",
     });
 
-    return res.status(200).json({ success: true, message: "User logged out successfully." });
+    return res
+      .status(200)
+      .json({ success: true, message: "User logged out successfully." });
   } catch (error) {
     console.error("Error during logout:", error);
     next(error);
