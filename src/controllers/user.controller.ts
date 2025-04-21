@@ -210,6 +210,8 @@ const addLinks = async (
     });
   }
 
+  
+
   if (!req.user) {
     return res.status(401).json({
       success: false,
@@ -239,6 +241,8 @@ const addLinks = async (
   }
 
   try{
+
+
     const existedUrl = await Link.findOne({
       user: req.user._id,
       url,
@@ -254,6 +258,14 @@ const addLinks = async (
     }
 
     const linkCount = await Link.countDocuments({ user: req.user._id });
+
+    if (linkCount >= 6) {
+      return res.status(400).json({
+        success: false,
+        message: "You can only create up to 6 links.",
+      });
+    }
+
   
     const newLink = await Link.create({
       url,

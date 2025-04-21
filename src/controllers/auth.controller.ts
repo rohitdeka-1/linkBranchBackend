@@ -55,8 +55,7 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
         expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
       } as SignOptions
     );
-    // const shortID = nanoid(4);
-    // createdUser.shortID = shortID;
+
     createdUser.refreshToken = refreshToken;
     await createdUser.save();
 
@@ -65,7 +64,6 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
       name: createdUser.fullname,
       username: createdUser.username,
       email: createdUser.email,
-      // shortID : shortID
     };
 
     res.cookie("accessToken", accessToken, {
@@ -84,14 +82,14 @@ const userRegistration = async (req: Request, res: Response): Promise<any> => {
 
     return res.status(201).json({
       success: true,
-      message: "User Registered",
+      message: "User registered successfully",
       data: registeredUser,
     });
   } catch (err) {
     console.error("Error in user registration", err);
     return res.status(500).json({
       success: false,
-      message: "Registration Error",
+      message: "Internal server error",
     });
   }
 };
@@ -110,15 +108,15 @@ const userLogin = async (
     });
 
     if (!user) {
-      return res.status(401).json({
+      return res.status(404).json({
         success: false,
-        message: "User does not exists",
+        message: "User does not exist",
       });
     }
 
-    const isPasswordVald = await bcrypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if (!isPasswordVald) {
+    if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
         message: "Incorrect credentials",
@@ -142,19 +140,20 @@ const userLogin = async (
       maxAge: 60 * 60 * 1000,
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      message: "access granted",
+      message: "Access granted",
       accessToken: accessToken,
     });
   } catch (err) {
-    console.error("Error while login : ", err);
+    console.error("Error while login: ", err);
     return res.status(500).json({
       success: false,
       message: "Internal server error",
     });
   }
 };
+
 const userLogout = async (
   req: Request,
   res: Response,
@@ -178,7 +177,10 @@ const userLogout = async (
       .json({ success: true, message: "User logged out successfully." });
   } catch (error) {
     console.error("Error during logout:", error);
-    next(error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
   }
 };
 
