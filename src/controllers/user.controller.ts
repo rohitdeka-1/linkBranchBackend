@@ -83,6 +83,7 @@ const fetchUser = async(req: IRequest, res: Response) => {
           bio: 1,
           profilePic: 1,
           links: 1, 
+          visitCount: 1,
         },
       },
     ]);
@@ -424,6 +425,32 @@ const deleteLinks = async (
       success: false,
       message: "Internal server error",
     });
+  }
+};
+
+
+export const incrementVisitCount = async (req: IRequest, res: Response) => {
+  const { username } = req.params;
+
+  try {
+    const user = await User.findOneAndUpdate(
+      { username },
+      { $inc: { visitCount: 1 } },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Visit count incremented successfully",
+      visitCount: user.visitCount,
+    });
+  } catch (error) {
+    console.error("Error incrementing visit count:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 

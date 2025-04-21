@@ -57,8 +57,14 @@ export const fetchLinksByUser = async (req: IRequest, res: Response) => {
             fullname: 1,
             username: 1,
             profilePic: 1,
+            
           },
-          links: 1,
+          links: {
+            _id: 1,
+            title: 1,
+            url: 1,
+            backgroundImage: 1,
+          },
         },
       },
     ]);
@@ -134,3 +140,5 @@ export const updateLink = async (req: IRequest, res: Response) => {
     });
   }
 };
+
+

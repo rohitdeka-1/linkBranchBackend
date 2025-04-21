@@ -1,5 +1,5 @@
 import express from "express";
-import { addLinks, deleteLinks, fetchUser, handleUploadImage, updateUser } from "../controllers/user.controller";
+import { addLinks, deleteLinks, fetchUser, handleUploadImage, incrementVisitCount, updateUser } from "../controllers/user.controller";
 import verifyToken from "../middlewares/auth.middleware";
 import { upload } from "../middlewares/multer.middleware";
 
@@ -12,6 +12,7 @@ userRoute.get("/me",verifyToken,fetchUser)
 userRoute.put("/user-up",verifyToken,uploadMulter,updateUser)
 userRoute.post("/links",verifyToken,addLinks)
 userRoute.delete("/:linkId",verifyToken,deleteLinks)
+userRoute.patch("/:username/visit", incrementVisitCount);
 
 
 export default userRoute;   

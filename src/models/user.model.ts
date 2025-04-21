@@ -13,6 +13,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   refreshToken: string;
+  visitCount: number;
 }
 
 const userSchema = new Schema<IUser>(
@@ -54,6 +55,10 @@ const userSchema = new Schema<IUser>(
     },
     refreshToken:{
       type: String,
+    },
+    visitCount :{
+      type: Number,
+      default: 0,
     },
   },
   {
