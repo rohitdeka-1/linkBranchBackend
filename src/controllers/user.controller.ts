@@ -5,6 +5,7 @@ import { v2 as cloudinary } from "cloudinary";
 import { User } from "../models/user.model";
 import { Link } from "../models/link.model";
 import { IRequest } from "../types/express";
+import { UserProjection } from "../utils/projections/UserProjection";
 
 
 const handleUploadImage = async (
@@ -29,15 +30,16 @@ const handleUploadImage = async (
     });
   }
 
-  if (!req.user) {
-    return res.status(401).json({
-      success: false,
-      message: "Access Unauthorized",
-    });
-  }
+  // TODO: Remove this checker as we used verifyToken middleware
+  // if (!req.user) {
+  //   return res.status(401).json({
+  //     success: false,
+  //     message: "Access Unauthorized",
+  //   });
+  // }
 
   try {
-    const updatedUser = await User.findOneAndUpdate( req.user?._id , {
+    await User.findOneAndUpdate(req.user?._id, {
       profilePic: uploadResult.secure_url,
     });
 
@@ -47,27 +49,21 @@ const handleUploadImage = async (
       image: uploadResult.secure_url,
     });
   } catch (err) {
+    console.error(err, "<<-- Error in image upload");
     return res.status(401).json({
       success: false,
-      message: "" + err,
+      message: "Internal server error",
     });
   }
 };
 
-const fetchUser = async(req: IRequest, res: Response) => {
-  if (!req.user) {
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorized access",
-    });
-  }
-
+const getCurrentUser = async (req: IRequest, res: Response) => {
   try {
     const userWithLinks = await User.aggregate([
-      { $match: { _id: req.user._id } },
+      { $match: { _id: req.user?._id } },
       {
         $lookup: {
-          from: "links", 
+          from: "links",
           localField: "_id",
           foreignField: "user",
           as: "links",
@@ -75,20 +71,12 @@ const fetchUser = async(req: IRequest, res: Response) => {
       },
       { $sort: { "links.order": 1 } },
       {
-        $project: {
-          _id: 1,
-          fullname: 1,
-          username: 1,
-          email: 1,
-          bio: 1,
-          profilePic: 1,
-          links: 1, 
-          visitCount: 1,
-        },
+        $project: UserProjection
       },
+      // TODO: Use unwind to remove array and get a single object
     ]);
 
-    if (!userWithLinks || userWithLinks.length === 0) {
+    if (!userWithLinks) {
       return res.status(404).json({
         success: false,
         message: "User not found",
@@ -97,7 +85,7 @@ const fetchUser = async(req: IRequest, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      user: userWithLinks[0], 
+      user: userWithLinks[0],       // TODO: Dont use array. Look at above query
     });
   } catch (err) {
     console.error("Error fetching user:", err);
@@ -155,15 +143,8 @@ const updateUser = async (req: IRequest, res: Response, next: NextFunction) => {
       });
     }
 
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: "Unauthorized access",
-      });
-    }
-
     const updatedUser = await User.findOneAndUpdate(
-      { _id: req.user._id },
+      { _id: req.user?._id },
       updateData,
       { new: true }
     );
@@ -204,19 +185,13 @@ const addLinks = async (
   next: NextFunction
 ): Promise<any> => {
   const { platform, url, icon } = req.body;
+
+  // TODO: Use payload validator
+
   if (!req.body) {
     return res.status(400).json({
       success: false,
       message: "No Body",
-    });
-  }
-
-  
-
-  if (!req.user) {
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorized access",
     });
   }
 
@@ -241,24 +216,8 @@ const addLinks = async (
     });
   }
 
-  try{
-
-
-    const existedUrl = await Link.findOne({
-      user: req.user._id,
-      url,
-    });
-  
-    console.log(existedUrl)
-  
-    if (existedUrl) {
-      return res.status(409).json({
-        success: false,
-        message: "Link already exists for this platform and URL",
-      });
-    }
-
-    const linkCount = await Link.countDocuments({ user: req.user._id });
+  try {
+    const linkCount = await Link.countDocuments({ user: req.user?._id });
 
     if (linkCount >= 6) {
       return res.status(400).json({
@@ -267,15 +226,28 @@ const addLinks = async (
       });
     }
 
-  
+    const existedUrl = await Link.findOne({
+      user: req.user?._id,
+      url,
+    });
+
+    console.log(existedUrl)
+
+    if (existedUrl) {
+      return res.status(409).json({
+        success: false,
+        message: "Link already exists for this platform and URL",
+      });
+    }
+
     const newLink = await Link.create({
       url,
       title: platform,
-      icon: icon || "defaul-icon",
-      user: req.user._id,
+      icon: icon || "default-icon",
+      user: req.user?._id,
       order: linkCount,
     });
-  
+
     if (!newLink) {
       return res.status(400).json({
         success: false,
@@ -283,28 +255,20 @@ const addLinks = async (
       });
     }
 
+    // TODO: Dont do this aggregate query because it takes time
     const userWithLinks = await User.aggregate([
-      { $match: { _id: req.user._id } },
+      { $match: { _id: req.user?._id } },
       {
         $lookup: {
-          from: "links", 
+          from: "links",
           localField: "_id",
           foreignField: "user",
           as: "links",
         },
       },
-
       { $sort: { "links.order": 1 } },
       {
-        $project: {
-          _id: 1,
-          fullname: 1,
-          username: 1,
-          email: 1,
-          bio: 1,
-          profilePic: 1,
-          links: 1,
-        },
+        $project: UserProjection
       },
     ]);
 
@@ -314,22 +278,22 @@ const addLinks = async (
         message: "User not found",
       });
     }
-  
+
     return res.status(200).json({
       success: true,
       message: "Link Added",
-      user: userWithLinks[0], 
+      user: userWithLinks[0],   // Better send the link and add the link to the array in frontend
     });
   }
 
-  catch(err){
-    console.log("Error",err);
+  catch (err) {
+    console.log("Error", err);
     return res.status(400).json({
       "success": false,
       "message": "Internal Server error"
     })
   }
-  
+
 };
 
 const deleteLinks = async (
@@ -338,13 +302,6 @@ const deleteLinks = async (
   next: NextFunction
 ): Promise<any> => {
   const { linkId } = req.params;
-
-  if (!req.user) {
-    return res.status(401).json({
-      success: false,
-      message: "Unauthorized access",
-    });
-  }
 
   if (!linkId) {
     return res.status(400).json({
@@ -364,7 +321,7 @@ const deleteLinks = async (
     console.log("req.user:", req.user);
     console.log("linkId:", linkId);
 
-    const link = await Link.findOne({ _id: linkId, user: req.user._id });
+    const link = await Link.findOne({ _id: linkId, user: req.user?._id });
     if (!link) {
       return res.status(404).json({
         success: false,
@@ -373,7 +330,7 @@ const deleteLinks = async (
     };
     const deleted = await Link.findOneAndDelete({
       _id: linkId,
-      user: req.user._id,
+      user: req.user?._id,
     });
 
     if (!deleted) {
@@ -384,10 +341,10 @@ const deleteLinks = async (
     }
 
     const userWithLinks = await User.aggregate([
-      { $match: { _id: req.user._id } },
+      { $match: { _id: req.user?._id } },
       {
         $lookup: {
-          from: "links", 
+          from: "links",
           localField: "_id",
           foreignField: "user",
           as: "links",
@@ -395,15 +352,7 @@ const deleteLinks = async (
       },
       { $sort: { "links.order": 1 } },
       {
-        $project: {
-          _id: 1,
-          fullname: 1,
-          username: 1,
-          email: 1,
-          bio: 1,
-          profilePic: 1,
-          links: 1,
-        },
+        $project: UserProjection
       },
     ]);
 
@@ -417,7 +366,7 @@ const deleteLinks = async (
     return res.status(200).json({
       success: true,
       message: "Link deleted successfully",
-      user: userWithLinks[0], 
+      user: userWithLinks[0],
     });
   } catch (err) {
     console.error("Error deleting link:", err);
@@ -446,7 +395,7 @@ export const incrementVisitCount = async (req: IRequest, res: Response) => {
     res.status(200).json({
       success: true,
       message: "Visit count incremented successfully",
-      visitCount: user.visitCount,
+      visitCount: user.visitCount,    // TODO: Why are you sending this as a response? Is it neccessary for user to see??
     });
   } catch (error) {
     console.error("Error incrementing visit count:", error);
@@ -454,5 +403,5 @@ export const incrementVisitCount = async (req: IRequest, res: Response) => {
   }
 };
 
-export { handleUploadImage, fetchUser, updateUser, addLinks, deleteLinks };
+export { handleUploadImage, getCurrentUser, updateUser, addLinks, deleteLinks };
 
